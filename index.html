@@ -374,7 +374,14 @@ html[lang="ko"] body { font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ email: email, source: "landing", lang: current })
     })
-      .then(function () {
+      // fetch only rejects on network failure — an HTTP error or a backend
+      // {ok:false} would otherwise be reported to the visitor as success.
+      .then(function (res) {
+        if (!res.ok) throw new Error("http " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data || data.ok !== true) throw new Error("backend rejected");
         status.className = "signup-status show ok";
         status.textContent = dict.signupOk;
         form.reset();
