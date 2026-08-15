@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slopcheck — It clicks together in minutes. The accountability doesn't.</title>
+<style>
+:root {
+  --paper:      #fbfbf9;
+  --surface:    #ffffff;
+  --ink:        #17181a;
+  --ink-soft:   #4a4c50;
+  --ink-faint:  #8d8f93;
+  --rule:       #17181a;
+  --rule-faint: #d7d7d5;
+  --stamp:      #a3211c;
+  --stamp-bg:   rgba(163,33,28,0.06);
+  --good:       #1f5c39;
+  --good-bg:    rgba(31,92,57,0.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --paper: #131313; --surface: #1a1a1a; --ink: #e9e8e4; --ink-soft: #aeada7; --ink-faint: #74736e;
+    --rule: #e9e8e4; --rule-faint: #3a3a38; --stamp: #e2685f; --stamp-bg: rgba(226,104,95,0.1);
+    --good: #6bbd8e; --good-bg: rgba(107,189,142,0.1);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #131313; --surface: #1a1a1a; --ink: #e9e8e4; --ink-soft: #aeada7; --ink-faint: #74736e;
+  --rule: #e9e8e4; --rule-faint: #3a3a38; --stamp: #e2685f; --stamp-bg: rgba(226,104,95,0.1);
+  --good: #6bbd8e; --good-bg: rgba(107,189,142,0.1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font-family: "Times New Roman", Times, serif; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+html[lang="ko"] body { font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 28px 0 56px; position: relative; }
+.wrap::before { content: ""; position: absolute; left: 28px; top: 0; bottom: 0; width: 1px; background: var(--rule-faint); }
+
+/* ---- Lang switch ---- */
+.langbar { display: flex; justify-content: flex-end; gap: 2px; padding: 14px 28px 0 56px; max-width: 760px; margin: 0 auto; }
+.lang-btn { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid var(--rule-faint); color: var(--ink-faint); padding: 4px 10px; cursor: pointer; }
+.lang-btn:first-child { border-right: none; }
+.lang-btn.active { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+
+/* ---- Nav ---- */
+.nav { padding: 20px 0 18px; border-bottom: 2px solid var(--rule); display: flex; align-items: baseline; justify-content: space-between; }
+.nav-brand { font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+.nav-sub { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+
+/* ---- Hero ---- */
+.hero { padding: 48px 0 44px; border-bottom: 1px solid var(--rule-faint); }
+.eyebrow { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; color: var(--stamp); margin: 0 0 18px; }
+.headline { font-size: clamp(38px, 6.2vw, 64px); font-weight: 700; letter-spacing: -0.01em; line-height: 1.08; margin: 0 0 26px; text-wrap: balance; }
+.sub { font-size: 17px; color: var(--ink-soft); max-width: 58ch; margin: 0; }
+
+/* ---- Problem statement ---- */
+.problem { padding: 40px 0; border-bottom: 1px solid var(--rule-faint); }
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 24px; }
+.problem-col { }
+.problem-label { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.problem-col.was .problem-label { color: var(--ink-faint); }
+.problem-col.now .problem-label { color: var(--stamp); }
+.problem-text { font-size: 15px; color: var(--ink-soft); line-height: 1.7; }
+.problem-text s { color: var(--ink-faint); }
+.problem-text b { color: var(--ink); }
+
+/* ---- Ladder ---- */
+.section-title { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-faint); margin: 0 0 10px; padding-top: 46px; }
+.section-head { font-size: clamp(24px, 3.4vw, 32px); font-weight: 700; letter-spacing: -0.005em; line-height: 1.3; margin: 0 0 30px; text-wrap: balance; }
+
+.tier { display: grid; grid-template-columns: 90px 1fr; gap: 0; border-top: 1px solid var(--rule-faint); }
+.tier:last-child { border-bottom: 1px solid var(--rule-faint); }
+.tier-level { padding: 26px 0; display: flex; flex-direction: column; align-items: center; }
+.tier-num { font-family: ui-monospace, monospace; font-size: 34px; font-weight: 700; color: var(--rule-faint); letter-spacing: -0.02em; }
+.tier-line { width: 1px; flex: 1; background: var(--rule-faint); margin-top: 8px; }
+.tier:last-child .tier-line { display: none; }
+.tier-body { padding: 26px 0 26px 22px; border-left: 1px solid var(--rule-faint); }
+.tier-name-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+.tier-name { font-size: 27px; font-weight: 700; letter-spacing: -0.005em; }
+.tier-price { font-family: ui-monospace, monospace; font-size: 16px; color: var(--stamp); font-weight: 700; }
+.tier-role { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+.tier-desc { font-size: 14.5px; color: var(--ink-soft); line-height: 1.7; margin: 0 0 14px; max-width: 56ch; }
+.tier-for { font-size: 13.5px; padding: 10px 14px; border-left: 3px solid var(--rule-faint); color: var(--ink-soft); margin-bottom: 14px; }
+.tier-for b { color: var(--ink); }
+.tier-cta { font-family: ui-monospace, monospace; font-size: 12.5px; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+.tier-cta:hover { color: var(--stamp); border-color: var(--stamp); }
+.tier-cta.quiet { color: var(--ink-faint); border-color: var(--rule-faint); cursor: default; pointer-events: none; }
+
+/* ---- Self-select ---- */
+.select-box { border: 1px solid var(--ink); padding: 26px 26px 28px; margin-top: 44px; }
+.select-tag { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--ink); display: inline-block; padding-bottom: 3px; margin-bottom: 16px; }
+.select-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule-faint); font-size: 14.5px; }
+.select-item:last-child { border-bottom: none; }
+.select-item b { flex: none; width: 84px; color: var(--stamp); font-family: ui-monospace, monospace; font-size: 12px; }
+
+/* ---- Signup ---- */
+.signup { border: 1px solid var(--rule); background: var(--stamp-bg); padding: 30px 30px 32px; margin-top: 56px; }
+.signup-desc { font-size: 14.5px; color: var(--ink-soft); max-width: 54ch; margin: 0 0 20px; }
+.signup-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.signup-input { flex: 1 1 240px; font: 14.5px "Times New Roman", Times, serif; font-family: inherit; padding: 11px 14px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); border-radius: 0; }
+.signup-input::placeholder { color: var(--ink-faint); }
+.signup-input:focus { outline: 2px solid var(--stamp); outline-offset: 1px; }
+.signup-submit { font-family: ui-monospace, monospace; font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em; padding: 11px 20px; background: var(--ink); color: var(--paper); border: 1px solid var(--ink); cursor: pointer; }
+.signup-submit:hover { background: var(--stamp); border-color: var(--stamp); }
+.signup-note { font-family: ui-monospace, monospace; font-size: 11px; color: var(--ink-faint); margin: 14px 0 0; }
+.signup-status { font-size: 13.5px; margin-top: 12px; display: none; }
+.signup-status.show { display: block; }
+.signup-status.ok { color: var(--good); }
+.signup-status.err { color: var(--stamp); }
+
+/* ---- Footer ---- */
+.footer { margin-top: 50px; padding: 26px 0 56px; border-top: 2px solid var(--ink); font-size: 12px; color: var(--ink-faint); }
+
+@media (max-width: 640px) {
+  .wrap, .langbar { padding-left: 40px; }
+  .headline { font-size: 30px; }
+  .problem-grid { grid-template-columns: 1fr; gap: 20px; }
+  .tier { grid-template-columns: 56px 1fr; }
+  .signup-form { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="langbar">
+  <button class="lang-btn" data-lang="en">EN</button>
+  <button class="lang-btn" data-lang="ko">KO</button>
+</div>
+
+<div class="wrap">
+
+  <div class="nav">
+    <div class="nav-brand">SLOPCHECK</div>
+    <div class="nav-sub" data-i18n="navSub"></div>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow" data-i18n="eyebrow"></p>
+    <h1 class="headline" data-i18n-html="headline"></h1>
+    <p class="sub" data-i18n="sub"></p>
+  </div>
+
+  <div class="problem">
+    <p class="section-title" style="padding-top:0" data-i18n="problemTitle"></p>
+    <div class="problem-grid">
+      <div class="problem-col was">
+        <div class="problem-label" data-i18n="wasLabel"></div>
+        <p class="problem-text" data-i18n-html="wasText"></p>
+      </div>
+      <div class="problem-col now">
+        <div class="problem-label" data-i18n="nowLabel"></div>
+        <p class="problem-text" data-i18n-html="nowText"></p>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-title" data-i18n="ladderTitle"></p>
+  <h2 class="section-head" data-i18n="ladderHead"></h2>
+
+  <div class="tier">
+    <div class="tier-level"><div class="tier-num">01</div><div class="tier-line"></div></div>
+    <div class="tier-body">
+      <div class="tier-name-row"><span class="tier-name" data-i18n="t1Name"></span><span class="tier-price">$15</span></div>
+      <div class="tier-role" data-i18n="t1Role"></div>
+      <p class="tier-desc" data-i18n="t1Desc"></p>
+      <div class="tier-for" data-i18n-html="t1For"></div>
+      <a href="#signup" class="tier-cta" data-i18n="t1Cta"></a>
+    </div>
+  </div>
+
+  <div class="tier">
+    <div class="tier-level"><div class="tier-num">02</div><div class="tier-line"></div></div>
+    <div class="tier-body">
+      <div class="tier-name-row"><span class="tier-name" data-i18n="t2Name"></span><span class="tier-price">$25</span></div>
+      <div class="tier-role" data-i18n="t2Role"></div>
+      <p class="tier-desc" data-i18n="t2Desc"></p>
+      <div class="tier-for" data-i18n-html="t2For"></div>
+      <a href="https://eternity632.gumroad.com/l/pggijs" class="tier-cta" target="_blank" rel="noopener" data-i18n="t2Cta"></a>
+    </div>
+  </div>
+
+  <div class="tier">
+    <div class="tier-level"><div class="tier-num">03</div><div class="tier-line"></div></div>
+    <div class="tier-body">
+      <div class="tier-name-row"><span class="tier-name" data-i18n="t3Name"></span><span class="tier-price">$299 – $800</span></div>
+      <div class="tier-role" data-i18n="t3Role"></div>
+      <p class="tier-desc" data-i18n="t3Desc"></p>
+      <div class="tier-for" data-i18n-html="t3For"></div>
+      <span class="tier-cta quiet" data-i18n="t3Cta"></span>
+    </div>
+  </div>
+
+  <div class="select-box">
+    <div class="select-tag" data-i18n="selectTag"></div>
+    <div class="select-item"><b data-i18n="s1B"></b><span data-i18n="s1T"></span></div>
+    <div class="select-item"><b data-i18n="s2B"></b><span data-i18n="s2T"></span></div>
+    <div class="select-item"><b data-i18n="s3B"></b><span data-i18n="s3T"></span></div>
+  </div>
+
+  <div class="signup" id="signup">
+    <p class="section-title" style="padding-top:0" data-i18n="signupTag"></p>
+    <h2 class="section-head" style="margin-bottom:14px" data-i18n="signupHead"></h2>
+    <p class="signup-desc" data-i18n="signupDesc"></p>
+    <form class="signup-form" id="signup-form">
+      <input class="signup-input" type="email" name="email" data-i18n-placeholder="signupPlaceholder" required autocomplete="email">
+      <button class="signup-submit" type="submit" data-i18n="signupSubmit"></button>
+    </form>
+    <p class="signup-status" id="signup-status"></p>
+    <p class="signup-note" data-i18n="signupFootnote"></p>
+  </div>
+
+  <div class="footer" data-i18n="footer"></div>
+
+</div>
+
+<script>
+(function () {
+  var I18N = {
+    en: {
+      navSub: "Anti-Slop Layer",
+      eyebrow: "The anti-slop layer for AI-built products",
+      headline: "It clicks together in minutes.<br>The accountability doesn't come with it.",
+      sub: "Claude Code, Cursor, Lovable — building is nearly free now, and just as easy. What hasn't gotten easier is finding someone to tell you whether it's actually any good. 15 years of hands-on UX design work, delivered three ways.",
+      problemTitle: "Why validation is the problem now",
+      wasLabel: "BEFORE",
+      wasText: "<s>Few people could build.</s> Every line of code, every screen took time — and there were naturally enough reviewers to match.",
+      nowLabel: "NOW",
+      nowText: "<b>Anyone can ship in a day.</b> But whether it's actually any good still needs a human call — if anything, that bottleneck got narrower.",
+      ladderTitle: "Three levels of involvement",
+      ladderHead: "Same problem, three ways to solve it.",
+      t1Name: "Decision Log",
+      t1Role: "Read it — self-serve, lightest touch",
+      t1Desc: "26 real UX decisions. When a checklist can't answer an ambiguous call, this shows how an actual team decided, and why. For building your own judgment.",
+      t1For: "For you if: <b>you're still figuring out what to build, or want to train your judgment</b>",
+      t1Cta: "Get notified at launch →",
+      t2Name: "Slopcheck",
+      t2Role: "Run it yourself — self-serve, structured",
+      t2Desc: "27 category checklists. Install it in your own Claude Code session and validate against 45 real enterprise projects. Where a fix can be automated, you get the specific change, not just a flag.",
+      t2For: "For you if: <b>you already have a prototype and want to check it yourself, right now</b>",
+      t2Cta: "See Slopcheck →",
+      t3Name: "Verdict",
+      t3Role: "Hand it off — full-service, external",
+      t3Desc: "Four independent perspectives, cross-checked against each other. For when self-checking isn't enough confidence — comes with a prioritized fix list.",
+      t3For: "For you if: <b>launch or a funding meeting is close, and this time you need to be sure</b>",
+      t3Cta: "Coming soon",
+      selectTag: "Still deciding?",
+      s1B: "Time to spare",
+      s1T: "Start with Decision Log — build the instinct first.",
+      s2B: "Have a build",
+      s2T: "Use Slopcheck — check it yourself, right now.",
+      s3B: "Deadline close",
+      s3T: "Not open yet — leave your email below and you'll hear first.",
+      signupTag: "Still deciding?",
+      signupHead: "Get one real decision at a time, free.",
+      signupDesc: "Every two weeks, one real decision from an actual project, and why it went that way.",
+      signupFootnote: "Unsubscribe anytime, just reply to any email.",
+      signupPlaceholder: "you@email.com",
+      signupSubmit: "Send me one",
+      signupSending: "Signing you up...",
+      signupOk: "You're on the list — check your inbox.",
+      signupNotConnected: "Not connected yet — let whoever's deploying this know.",
+      signupFail: "Something went wrong. Try again in a moment.",
+      footer: "Slopcheck is built on 15 years of real enterprise-grade UX project work (telecom and manufacturing clients) — 45 actual projects, roughly 7,400 documents. Not a generic best-practices list. A record of what actually failed, and why."
+    },
+    ko: {
+      navSub: "Anti-Slop Layer",
+      eyebrow: "The anti-slop layer for AI-built products",
+      headline: "딸깍하면 나옵니다.<br>책임은 따라오지 않습니다.",
+      sub: "Claude Code, Cursor, Lovable — 만드는 건 거의 공짜가 됐고, 그만큼 간단해졌습니다. 근데 그게 진짜 괜찮은 건지 봐줄 사람은 그대로예요. 15년 실전 UX 기획 경험을 세 가지 방식으로 씁니다.",
+      problemTitle: "왜 지금 검증이 문제인가",
+      wasLabel: "예전엔",
+      wasText: "<s>만드는 사람이 적었다.</s> 코드 한 줄, 화면 하나에 시간이 걸렸고, 그만큼 검토할 사람도 자연히 있었다.",
+      nowLabel: "지금은",
+      nowText: "<b>누구나 하루 만에 만든다.</b> 그런데 그게 진짜 괜찮은 건지 판단해줄 사람은 그대로다 — 오히려 병목이 더 좁아졌다.",
+      ladderTitle: "세 가지 개입 강도",
+      ladderHead: "같은 문제, 세 가지 해법.",
+      t1Name: "판단로그",
+      t1Role: "읽는다 — 셀프, 가장 낮은 개입",
+      t1Desc: "실제 UX 판단 26장면. 체크리스트가 답 못 하는 애매한 순간, 실제 팀은 어떻게 결정했는지 사례로 보여줍니다. 판단 감각 자체를 훈련하고 싶을 때.",
+      t1For: "이런 분께: <b>아직 뭘 만들지도 정하는 중이거나, 판단 근육 자체를 기르고 싶은 분</b>",
+      t1Cta: "출시 알림 받기 →",
+      t2Name: "Slopcheck",
+      t2Role: "직접 돌린다 — 셀프, 구조화된 개입",
+      t2Desc: "27개 카테고리 체크리스트. 자기 Claude Code 세션에 설치해서, 45개 실제 기업 프로젝트 근거로 직접 검증합니다. 자동 제안 가능한 항목엔 구체적 수정안까지 함께 나옵니다.",
+      t2For: "이런 분께: <b>이미 프로토타입이 있고, 지금 바로 스스로 점검하고 싶은 분</b>",
+      t2Cta: "Slopcheck 보기 →",
+      t3Name: "Verdict",
+      t3Role: "맡긴다 — 외주, 완전한 개입",
+      t3Desc: "4개의 독립적 관점이 직접 교차검증한 결과. 셀프 체크로는 확신이 안 설 때, 우선순위 실행 리스트까지 받아서 바로 고칩니다.",
+      t3For: "이런 분께: <b>런칭·투자 미팅이 임박했고, 이번엔 확실히 알아야 하는 분</b>",
+      t3Cta: "준비 중",
+      selectTag: "잘 모르겠다면",
+      s1B: "시간 많음",
+      s1T: "판단로그부터 — 감을 먼저 잡으세요.",
+      s2B: "결과물 있음",
+      s2T: "Slopcheck으로 — 지금 바로 셀프 점검.",
+      s3B: "마감 임박",
+      s3T: "아직은 준비 중입니다 — 이메일을 남겨주시면 열릴 때 가장 먼저 알려드릴게요.",
+      signupTag: "아직 결정 못했다면",
+      signupHead: "무료로, 판단 사례 하나씩 먼저 받아보세요.",
+      signupDesc: "2주에 한 번, 실제 프로젝트에서 나온 판단 사례 하나와 왜 그렇게 결정됐는지를 보내드립니다.",
+      signupFootnote: "구독 해지는 메일 회신으로 언제든 가능합니다.",
+      signupPlaceholder: "you@email.com",
+      signupSubmit: "사례 받기",
+      signupSending: "등록 중...",
+      signupOk: "등록됐습니다 — 확인 메일을 보내드렸어요.",
+      signupNotConnected: "아직 연결 전입니다 — 배포 담당자에게 알려주세요.",
+      signupFail: "전송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+      footer: "Slopcheck은 15년 실제 통신사·제조사급 기업 UX 기획 경험(45개 실제 프로젝트, 7,400여 개 문서)을 근거로 만들어졌습니다. 일반적인 모범사례 나열이 아니라, 실제로 무엇이 실패했는지의 기록입니다."
+    }
+  };
+
+  var current = "en";
+
+  function render(lang) {
+    current = lang;
+    document.documentElement.lang = lang;
+    var dict = I18N[lang];
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n");
+      if (dict[key] !== undefined) el.textContent = dict[key];
+    });
+    document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-html");
+      if (dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-placeholder");
+      if (dict[key] !== undefined) el.placeholder = dict[key];
+    });
+    document.querySelectorAll(".lang-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+    });
+  }
+
+  document.querySelectorAll(".lang-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      render(btn.getAttribute("data-lang"));
+    });
+  });
+
+  render("en");
+
+  // ---- signup form ----
+  // Deployed after the Apps Script web app exists — replace this constant.
+  var SIGNUP_ENDPOINT = "https://script.google.com/macros/s/AKfycbxOL4psOdThIltFEUCMUbn6DdFcRJQ3oYfboHYZvELklUkk_2gTC53EhYKvSbLv6ece/exec";
+
+  var form = document.getElementById("signup-form");
+  var status = document.getElementById("signup-status");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = form.email.value.trim();
+    if (!email) return;
+
+    var dict = I18N[current];
+    status.className = "signup-status show";
+    status.textContent = dict.signupSending;
+
+    if (SIGNUP_ENDPOINT.indexOf("SLOPCHECK_SIGNUP_ENDPOINT") !== -1) {
+      status.className = "signup-status show err";
+      status.textContent = dict.signupNotConnected;
+      return;
+    }
+
+    fetch(SIGNUP_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ email: email, source: "landing", lang: current })
+    })
+      .then(function () {
+        status.className = "signup-status show ok";
+        status.textContent = dict.signupOk;
+        form.reset();
+      })
+      .catch(function () {
+        status.className = "signup-status show err";
+        status.textContent = dict.signupFail;
+      });
+  });
+})();
+</script>
+</body>
+</html>
